@@ -1,0 +1,107 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Hello World App
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+paths:
+  /upload:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: upload_controller
+    get:
+      description: Returns either 'fail', 'success' or 'in-progress' status of upload job
+      # used as the method name of the controller
+      operationId: checkUploadStatus
+      parameters:
+        - name: fileId
+          in: query
+          description: The unique identifier of file upload job
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SuccessResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      description: Returns unique job id of uploaded file for checking processing status
+      # used as the method name of the controller
+      operationId: uploadFile
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: file
+          in: formData
+          description: Upload file from filesystem
+          required: true
+          type: file
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SuccessResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /report:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: report_controller
+    get:
+      description: Returns the payroll records of given page identifier
+      # used as the method name of the controller
+      operationId: fetchRecord
+      parameters:
+        - name: pageId
+          in: query
+          description: Page cursor for report fetch
+          required: false
+          type: number
+      responses:
+        "200":
+          description: Success
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/SuccessResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  SuccessResponse:
+    required:
+      - success
+    properties:
+      success:
+        type: string
+  ErrorResponse:
+    required:
+      - success
+    properties:
+      success:
+        type: string

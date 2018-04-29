@@ -1,0 +1,9 @@
+{
+  "dbHost": "wave-payroll.c6xqzbwsjh88.us-east-2.rds.amazonaws.com",
+  "dbUser": "admin",
+  "dbPassword": "password",
+  "dbName": "partner01",
+  "dbTable": "timesheet",
+  "uploadDir": "/Users/parminderkaur/bc-private-code/temp-upload",
+  "errorDir": "/temp-err"
+}
