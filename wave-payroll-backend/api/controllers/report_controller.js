@@ -1,14 +1,19 @@
 'use strict';
 
+var reportService = require('../lib/report_service');
+
 module.exports = {
   fetchRecord: fetchRecord
 };
 
 function fetchRecord(req, res) {
-  // variables defined in the Swagger document can be referenced using req.swagger.params.{parameter_name}
-  var name = req.swagger.params.name.value || 'stranger';
-  var hello = util.format('Hello, %s!', name);
-
-  // this sends back a JSON response which is a single string
-  res.json(hello);
+  var pageId = req.swagger.params.pageId.value || null;
+  reportService.fetchPage(pageId, function(err, result){
+    if (err){
+      res.status(400);
+      return res.json({ success: 'false', error: err.message });
+    }
+    res.status(200);
+    return res.json({ success: 'true', result: result });
+  });
 }

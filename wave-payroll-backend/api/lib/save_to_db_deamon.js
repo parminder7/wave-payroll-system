@@ -9,12 +9,11 @@ var logger = log4js.getLogger('console');
 var chokidar = require('chokidar');
 var _ = require('lodash');
 var utils = require('../helpers/utils');
+var dbutils = require('../helpers/database_utils');
 var path = require('path');
 var config = require('../../config/config').getconfig();
 logger.level = 'debug';
-// log4js.configure({
-//   appenders: [ { type: 'console' } ]
-// });
+
 const REPORT_ID_FIELD = 'report id';
 
 // exported methods to access outside file
@@ -24,28 +23,10 @@ module.exports = {
 
 function process_pending_jobs(){
   async.waterfall([
-    connect_to_database,
+    dbutils.connect_to_database,
     process_files
   ], function (err){
 
-  });
-}
-
-function connect_to_database(callback){
-  let connection = mysql.createConnection({
-    host     : config.dbHost,
-    user     : config.dbUser,
-    password : config.dbPassword,
-    database : config.dbName
-  });
-
-  connection.connect(function(err){
-    if (err){
-      logger.error('Database connection failed!');
-      return callback(err);
-    }
-    logger.info('Connected to database : %s', config.dbHost);
-    return callback(null, connection);
   });
 }
 
