@@ -29,7 +29,7 @@ paths:
         - name: fileId
           in: query
           description: The unique identifier of file upload job
-          required: true
+          required: false
           type: string
       responses:
         "200":
