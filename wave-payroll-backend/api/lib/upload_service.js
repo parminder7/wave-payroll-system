@@ -11,8 +11,58 @@ var logger = log4js.getLogger('console');
 logger.level = 'debug';
 
 module.exports = {
-  upload: save_file_to_upload_dir
+  upload: save_file_to_upload_dir,
+  uploadStatus: upload_status
 };
+
+function upload_status(fileId, callback){
+  if (!fileId){
+    // check if upload dir has anything left for processing
+    fs.readdir(config.uploadDir, function(err, files){
+      if (err){
+        logger.error(`Error occurred while checking upload dir, err: ${err}`);
+        return callback(err);
+      }
+      if (!files.length) {
+        logger.info(`Upload dir is empty currently`);
+        return callback(null, {status: 'success'});
+      }
+      return callback(null, {status: 'in-progress'});
+    });
+  }
+  // otherwise, check if given file id is present in upload folder
+  // if present, return in-progress status
+  // if not present, check error dir (if present in error dir, return fail status)
+  // ortherwise, return processed/succeeded status
+  let file_uploadpath = path.join(config.uploadDir, fileId);
+  let file_errorpath = path.join(config.errorDir, fileId);
+  fs.stat(file_uploadpath, function(err){
+    if (!err){ // file found
+      logger.warn(`${fileId} found in upload path`);
+      return callback(null, {status: 'in-progress'});
+    }
+    if (err.code === 'ENOENT'){ // file not found
+      fs.stat(file_errorpath, function(err){
+        if (!err) {
+          logger.warn(`${fileId} found in error path`);
+          return callback(null, {status: 'fail'});
+        }
+        if (err.code === 'ENOENT'){ // file not found
+          logger.info(`Upload and error dir has no ${fileId}`);
+          return callback(null, {status: 'success'});
+        }
+        else {
+          logger.error(`Error occurred while checking error dir, err: ${err}`);
+          return callback(err);
+        }
+      });
+    }
+    else {
+      logger.error(`Error occurred while checking upload dir, err: ${err}`);
+      return callback(err);
+    }
+  });
+}
 
 function save_file_to_upload_dir(files, callback){
   // safeguard for empty file array

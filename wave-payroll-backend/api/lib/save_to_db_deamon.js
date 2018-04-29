@@ -9,6 +9,7 @@ var logger = log4js.getLogger('console');
 var chokidar = require('chokidar');
 var _ = require('lodash');
 var utils = require('../helpers/utils');
+var path = require('path');
 var config = require('../../config/config').getconfig();
 logger.level = 'debug';
 // log4js.configure({
@@ -57,25 +58,39 @@ function process_files(conn, callback){
 
   // attach event handler on a new file add
   watcher
-    .on('add', path => {
-    logger.info(`ADD event triggered by file ${path}`);
+    .on('add', fpath => {
+    logger.info(`ADD event triggered by file ${fpath}`);
     async.waterfall([
-      async.apply(parse_csv, path),
+      async.apply(parse_csv, fpath),
       async.apply(load_to_db, conn)
     ], function(err){
       if (err){
         logger.error(`Error parsing and loading data from CSV to database ${err}`);
-        // TODO: move file from upload dir to err dir (for re-try)
-        return callback(err);
+        let to = path.join(config.errorDir, fpath.replace(/^.*[\\\/]/, ''));
+        movefile(fpath, to, function(error){
+          if (err) return callback(error);
+          return callback(err);
+        });
       }
       // remove file after processing is done
-      removefile(path, callback);
+      removefile(fpath, callback);
     });
     })
     .on('error', error => {
       logger.error(`Failed in watcher: ${error}`);
       return callback(error);
     })
+}
+
+function movefile(from, to, callback){
+  fs.rename(from, to, function(err){
+    if (err){
+      logger.error(`Error moving file from upload dir to error dir: ${err}`);
+      return callback(err);
+    }
+    logger.info(`Moved file to error dir -- for retry later`);
+    return callback(null);
+  });
 }
 
 function removefile(path, callback){
@@ -190,7 +205,7 @@ function load_to_db(conn, data, report_id, callback){
   conn.query(query, [data], function(err) {
     if (err) {
       logger.error(`load_to_db insertion failed, query: ${query}`);
-      // TODO: move file from upload dir to err dir (for re-try)
+      // DONE: move file from upload dir to err dir (for re-try)
       return callback(err);
     }
     // conn.end();
