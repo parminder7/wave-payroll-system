@@ -7,7 +7,7 @@ module.exports = {
 };
 
 function fetchRecord(req, res) {
-  var pageId = req.swagger.params.pageId.value || null;
+  var pageId = req.swagger.params.pageId.value || 0;
   reportService.fetchPage(pageId, function(err, result){
     if (err){
       res.status(400);

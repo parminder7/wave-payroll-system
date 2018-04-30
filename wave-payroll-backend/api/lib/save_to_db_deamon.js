@@ -96,7 +96,7 @@ function parse_csv(path, callback){
       let isfooter = false;
       headers.forEach( header => {
         // special handling for report id footer
-        if (row[header] === REPORT_ID_FIELD){
+        if (row[header] === REPORT_ID_FIELD){ //TODO: fail if report id already exists
           isfooter = true;
         }
         if (isfooter && row[header]) {
