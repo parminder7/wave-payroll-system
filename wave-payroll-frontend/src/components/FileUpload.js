@@ -39,7 +39,6 @@ class FileUpload extends Component{
     console.log(value);
     console.log(e.target.files);
     this.setState({ selectedFile: e.target.files[0] || null });
-    //this.uploadHandler(e.target.files[0]);
   }
 
   render(){
@@ -59,7 +58,7 @@ class FileUpload extends Component{
         </FormGroup>
 
         <ButtonToolbar className="section">
-          <Button bsStyle="success" onClick={this.uploadHandler()}>Upload</Button>
+          <Button bsStyle="success" onClick={() => this.uploadHandler()}>Upload</Button>
         </ButtonToolbar>
 
       </div>
