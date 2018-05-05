@@ -25,11 +25,6 @@ There is a frontend application, a backend server, a daemon service (for writing
 **#6.** Once the file processing is done successfully, the payroll report table is automatically reloaded with new data by fetching the latest contents from `GET /report`.
 
 
-## Use-case breakdown
-
-* User should be able to upload a CSV file with a specific format. Each CSV file should have a unquie report identifier and application should not allow to 
-
-
 # Run & Build Instructions
 
 ### Step 0: Install npm and node
@@ -65,7 +60,7 @@ Refer. https://nodejs.org/en/download/package-manager/ for node installation ins
 
 2. Install dependencies by running `npm i`.
 
-3. Update `config.json` and provide ``
+3. Update `config.json` and provide `uploadDir` and `errorDir` paths. (create two empty directory and update paths)
 
 4. Start server. 
 
@@ -108,6 +103,11 @@ Note: The backend and daemon service combined logs can be viewed by running foll
 ```sh
 pm2 logs 
 ```
+
+### Step 4: MySql database instance
+
+MySql database instance is already up and running on AWS. No need to do any special setup there.
+
 
 That's it! Start playing. Go to http://localhost:3000/.
 
