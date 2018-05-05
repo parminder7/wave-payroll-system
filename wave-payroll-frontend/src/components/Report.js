@@ -57,14 +57,29 @@ class Report extends Component{
     return items;
   }
 
+  prefix_pay_period(end_date){
+    let date = end_date.split('/');
+    if(date.length > 0 && date.length < 4){
+      if(date[0] === '15'){
+        return '1/' + date[1] + '/' + date[2] + ' - ' + end_date;
+      }
+      else{
+        return '16/' + date[1] + '/' + date[2] + ' - ' + end_date;
+      }
+    }
+    return '';
+  }
+
   render(){
 
+    let _this = this;
     let rows = this.state.contents.map(function(row, key) {
+      let pay_period = _this.prefix_pay_period(row.pay_day);
       return (
         <tr key={key}>
           <td>{row.emp_id}</td>
-          <td>{row.pay_day}</td>
-          <td>{row.pay_per_role}</td>
+          <td>{pay_period}</td>
+          <td>${row.pay_per_role}</td>
         </tr>
       );
     });
@@ -76,9 +91,9 @@ class Report extends Component{
         <Table striped bordered condensed hover>
           <thead>
           <tr>
-            <th>emp_id</th>
-            <th>pay_day</th>
-            <th>pay_per_role</th>
+            <th>Employee ID</th>
+            <th>Pay Period</th>
+            <th>Amount Paid</th>
           </tr>
           </thead>
           <tbody>
