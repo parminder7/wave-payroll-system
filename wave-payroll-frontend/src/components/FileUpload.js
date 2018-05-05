@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { ButtonToolbar, Button, PageHeader, FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
 import './../App.css';
 import axios from 'axios';
+import Report from './Report';
 
 class FileUpload extends Component{
 
@@ -43,7 +44,7 @@ class FileUpload extends Component{
 
   render(){
     return(
-      <div className="page-container">
+      <div className="container">
         <PageHeader>
           Wave Payroll Web Application
         </PageHeader>
@@ -60,6 +61,8 @@ class FileUpload extends Component{
         <ButtonToolbar className="section">
           <Button bsStyle="success" onClick={() => this.uploadHandler()}>Upload</Button>
         </ButtonToolbar>
+
+        <Report/>
 
       </div>
     );
