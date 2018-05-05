@@ -56,7 +56,7 @@ function get_page_records(pageId, obj, callback){
         let date = new Date(rec.pay_day);
         rec.pay_day = date.getUTCDate() + '/' + date.getUTCMonth() + '/' + date.getUTCFullYear();
       });
-      console.log(result);
+
       let retobj = {
         pagination: {
           pages: pages,
