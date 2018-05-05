@@ -21,6 +21,13 @@ class Report extends Component{
     this.fetch_contents(this.state.active_page);
   }
 
+  componentWillReceiveProps(nextProps){
+    if((nextProps.shouldReload !== this.props.shouldReload) && nextProps.shouldReload){
+      this.setState({ active_page: 0 },
+        this.fetch_contents(this.state.active_page));
+    }
+  }
+
   fetch_contents(pageId){
     let _this = this;
     axios.get('http://localhost:10010/report?pageId=' + pageId)
@@ -45,7 +52,7 @@ class Report extends Component{
     for(let number = 1; number <= this.state.total_pages; number++){
       items.push(
         <Pagination.Item
-          active={number === this.state.active_page}
+          active={number === this.state.active_page + 1}
           key={number}
           onClick={() => this.fetch_contents(number - 1)}
         >

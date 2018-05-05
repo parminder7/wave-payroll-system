@@ -16,8 +16,6 @@ logger.level = 'debug';
 
 const REPORT_ID_FIELD = 'report id';
 
-var ABORT_LOAD = false;
-
 // exported methods to access outside file
 module.exports = {
   process_pending_jobs: process_pending_jobs
@@ -50,18 +48,9 @@ function process_files(conn, callback){
     ], function(err){
       if (err){
         logger.error(`Error parsing and loading data from CSV to database ${err}`);
-        // don't move file to error dir when aborting on duplicate report id
-        if(ABORT_LOAD){
-          removefile(fpath, callback);
-        }
-        else{
-          // else push file to error dir for retry (if needed in future)
-          let to = path.join(config.errorDir, fpath.replace(/^.*[\\\/]/, ''));
-          movefile(fpath, to, function(error){
-            if (err) return callback(error);
-            return callback(err);
-          });
-        }
+        // push file to error dir for retry (if needed in future)
+        let to = path.join(config.errorDir, fpath.replace(/^.*[\\\/]/, ''));
+        movefile(fpath, to, callback);
       }
       else{
         // remove file after processing is done
@@ -81,8 +70,10 @@ function movefile(from, to, callback){
       logger.error(`Error moving file from upload dir to error dir: ${err}`);
       return callback(err);
     }
-    logger.info(`Moved file to error dir -- for retry later`);
-    return callback(null);
+    else{
+      logger.info(`Moved file to error dir -- for retry later`);
+      // return callback(null);
+    }
   });
 }
 
@@ -207,7 +198,7 @@ function load_to_db(conn, obj, callback){
 function check_if_report_exists(conn, obj,callback){
   async.waterfall([
     async.apply(get_report_ids, conn),
-    function(list, callback){
+    function(list, cb){
       let found = false;
       _.forEach(list, report => {
         if(report.report_id == obj.report_id){
@@ -217,11 +208,10 @@ function check_if_report_exists(conn, obj,callback){
       });
 
       if(found){
-        ABORT_LOAD = true;
-        return callback(new Error(`Report id already exists. Aborted upload.`));
+        return cb(new Error(`Report id already exists. Aborted upload.`));
       }
       else
-        return callback(null);
+        return cb(null);
     }
   ], function(err){
     if(err)

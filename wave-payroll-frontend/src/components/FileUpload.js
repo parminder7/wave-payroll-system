@@ -9,7 +9,13 @@ class FileUpload extends Component{
     super(props);
     this.state = {
       selectedFile: null,
-      error: ''
+      error: '',
+      warn: '',
+      info: '',
+      jobId: '',
+      isSuccess: 'undefined',
+      reload: false,
+      intervalId: 0
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -26,6 +32,10 @@ class FileUpload extends Component{
       axios.post('http://localhost:10010/upload', data)
         .then(function (response) {
           console.log(response);
+          _this.setState({ jobId: response.data.result[0].jobId || '' }, () => {
+            let intervalId = setInterval(() => _this.poll_on_jobId(), 1000);
+            _this.setState({ intervalId: intervalId });
+          });
           _this.setError('');
         })
         .catch(function (error) {
@@ -35,6 +45,41 @@ class FileUpload extends Component{
     }
   }
 
+  poll_on_jobId(){
+    const FAIL = 'fail', SUCCESS = 'success', INPROGRESS = 'in-progress';
+    let _this = this;
+    axios.get('http://localhost:10010/upload?fileId=' + this.state.jobId)
+      .then(function (response){
+        let status = response.data.result.status;
+        if (status === FAIL){
+          _this.setState({
+            error: 'Failed to load the last uploaded file. Either report already exists or something bad has happened.',
+            warn: '', info: ''
+          });
+          clearInterval(_this.state.intervalId);
+        }
+        if (status === SUCCESS){
+          _this.setState({
+            info: 'Successfully loaded the last uploaded file. Payroll summary is now updated.',
+            warn: '', error: '', reload: true
+          });
+          clearInterval(_this.state.intervalId);
+        }
+        if (status === INPROGRESS){
+          _this.setState({
+            warn: 'Last uploaded file is still in-progress...',
+            info: '', error: ''
+          });
+        }
+      })
+      .catch(function (error){
+        _this.setState({
+          error: `Failed to load the last uploaded file. ${error.message}`,
+          warn: '', info: ''
+        });
+        clearInterval(_this.state.intervalId);
+      })
+  }
 
   handleChange(e){
     let name = e.target.name;
@@ -57,13 +102,23 @@ class FileUpload extends Component{
     );
   }
 
+  showWarn(warn){
+    return (<Alert bsStyle="warning">{warn}</Alert>);
+  }
+
+  showInfo(info){
+    return (<Alert bsStyle="success">{info}</Alert>);
+  }
+
   render(){
 
     let alert = (this.state.error) && this.showAlert(this.state.error);
+    let warn = (this.state.warn) && this.showWarn(this.state.warn);
+    let info = (this.state.info) && this.showInfo(this.state.info);
 
     return(
       <div className="container">
-        {alert}
+        {alert || warn || info}
 
         <PageHeader>
           Wave Payroll Web Application
@@ -82,7 +137,7 @@ class FileUpload extends Component{
           <Button bsStyle="success" onClick={() => this.uploadHandler()}>Upload</Button>
         </ButtonToolbar>
 
-        <Report onError={this.setError} />
+        <Report onError={this.setError} shouldReload={this.state.reload} />
 
       </div>
     );
