@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { ButtonToolbar, Button, PageHeader, FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
-import './../App.css';
+import { ButtonToolbar, Button, PageHeader, FormGroup, ControlLabel, FormControl, Alert } from 'react-bootstrap';
 import axios from 'axios';
 import Report from './Report';
 
@@ -9,15 +8,17 @@ class FileUpload extends Component{
   constructor(props) {
     super(props);
     this.state = {
-      selectedFile: null
+      selectedFile: null,
+      error: ''
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.uploadHandler = this.uploadHandler.bind(this);
+    this.setError = this.setError.bind(this);
   }
 
   uploadHandler(){
-    console.log(this.state.selectedFile);
+    let _this = this;
     let file = this.state.selectedFile;
     if(file){
       const data = new FormData();
@@ -25,9 +26,11 @@ class FileUpload extends Component{
       axios.post('http://localhost:10010/upload', data)
         .then(function (response) {
           console.log(response);
+          _this.setError('');
         })
         .catch(function (error) {
           console.log(error);
+          _this.setError(error.message);
         });
     }
   }
@@ -42,9 +45,26 @@ class FileUpload extends Component{
     this.setState({ selectedFile: e.target.files[0] || null });
   }
 
+  setError(error){
+    this.setState({ error: error || ''});
+  }
+
+  showAlert(error){
+    return (
+      <Alert bsStyle="danger">
+        <strong>O Snap!</strong> {error}. Please reload page.
+      </Alert>
+    );
+  }
+
   render(){
+
+    let alert = (this.state.error) && this.showAlert(this.state.error);
+
     return(
       <div className="container">
+        {alert}
+
         <PageHeader>
           Wave Payroll Web Application
         </PageHeader>
@@ -62,7 +82,7 @@ class FileUpload extends Component{
           <Button bsStyle="success" onClick={() => this.uploadHandler()}>Upload</Button>
         </ButtonToolbar>
 
-        <Report/>
+        <Report onError={this.setError} />
 
       </div>
     );

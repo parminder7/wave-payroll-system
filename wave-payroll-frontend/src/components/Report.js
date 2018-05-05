@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Label, Table, Pagination } from 'react-bootstrap';
-import './../App.css';
 import axios from 'axios';
 
 class Report extends Component{
@@ -12,7 +11,7 @@ class Report extends Component{
       prev: 0,
       next: 0,
       total_pages: 0,
-      contents: []
+      contents: [],
     };
     this.fetch_contents = this.fetch_contents.bind(this);
     this.render_pages_footer = this.render_pages_footer.bind(this);
@@ -37,7 +36,7 @@ class Report extends Component{
         });
       })
       .catch(function(error){
-        console.log(error);
+        _this.props.onError(error.message);
       })
   }
 
